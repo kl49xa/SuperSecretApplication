@@ -1,22 +1,41 @@
 package com.example.super_secret;
 
+import android.Manifest;
+import android.app.Activity;
+import android.app.PendingIntent;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.pm.PackageManager;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
+import android.widget.Button;
+import android.widget.Switch;
+import android.widget.Toast;
 
-import com.example.super_secret.ui.main.SectionsPagerAdapter;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.tabs.TabLayout;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.viewpager.widget.ViewPager;
 import androidx.appcompat.app.AppCompatActivity;
-
-import android.view.Menu;
-import android.view.MenuItem;
-import android.view.View;
-import android.widget.TableLayout;
 import androidx.appcompat.widget.Toolbar;
 
-//import com.example.super_secret.ui.main.SectionsPagerAdapter;
+import android.os.Bundle;
+import android.app.Activity;
+import android.telephony.SmsManager;
+import android.view.Menu;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.*;
+import android.view.View.OnClickListener;
+import android.view.*;
+
+import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -24,6 +43,15 @@ public class MainActivity extends AppCompatActivity {
     private ViewPager viewPager;
     private TabLayout tabLayout;
     private Toolbar toolbar;
+    private static final int MY_PERMISSIONS_REQUEST_RECEIVE_SMS = 0;
+    private String messages;
+
+
+    // Write a message to the database
+    FirebaseDatabase database = FirebaseDatabase.getInstance();
+    DatabaseReference myRef = database.getReference("message");
+
+    //myRef.setValue("Hello, World!");
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,25 +61,47 @@ public class MainActivity extends AppCompatActivity {
         tabLayout = (TabLayout) findViewById(R.id.tabs);
         viewPager = (ViewPager) findViewById(R.id.view_pager);
         toolbar =  (Toolbar) findViewById(R.id.myToolbar);
-//
+
         setSupportActionBar(toolbar);
         setupViewPager(viewPager);
-//
         tabLayout.setupWithViewPager(viewPager);
-//        SectionsPagerAdapter sectionsPagerAdapter = new SectionsPagerAdapter(this, getSupportFragmentManager());
-//        ViewPager viewPager = findViewById(R.id.view_pager);
-//        viewPager.setAdapter(sectionsPagerAdapter);
-//        tableLayout = (TableLayout) findViewById(R.id.tabs);
-//        tableLayout.setupWithViewPager(viewPager);
-//        FloatingActionButton fab = findViewById(R.id.fab);
-//
-//        fab.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-//                        .setAction("Action", null).show();
-//            }
-//        });
+
+        // if sms permission is not granted
+        if(ContextCompat.checkSelfPermission(this, Manifest.permission.RECEIVE_SMS)!= PackageManager.PERMISSION_GRANTED)
+        {
+            // if the permission is not granted then check if the user has denied the permission
+            if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.RECEIVE_SMS))
+            {
+                 // Do nothing as user has denied
+            }
+            else
+            {
+                // a popup will appear
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.RECEIVE_SMS}, MY_PERMISSIONS_REQUEST_RECEIVE_SMS);
+            }
+        }
+
+
+    }// OnCreate
+    //after getting the result of permission request
+
+    @Override
+    public void onRequestPermissionsResult (int requestCode, String permissions[], int[] grantResults)
+    {
+        //check requestCode
+        switch(requestCode)
+        {
+            case MY_PERMISSIONS_REQUEST_RECEIVE_SMS:
+            {
+                if (grantResults.length>0 && grantResults[0]==PackageManager.PERMISSION_GRANTED)
+                {
+                    //New broadcast receiver will work in background
+                    Toast.makeText(this, "Thank you for permission", Toast.LENGTH_LONG).show();
+                }
+                else
+                    Toast.makeText(this,"This app will require permissions", Toast.LENGTH_LONG).show();
+            }
+        }
     }
 
     private void setupViewPager(ViewPager viewPager) {
