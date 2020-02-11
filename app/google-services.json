@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "874539027376",
+    "firebase_url": "https://super-secret-application.firebaseio.com",
+    "project_id": "super-secret-application",
+    "storage_bucket": "super-secret-application.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:874539027376:android:06a494ce31e0e3c763e475",
+        "android_client_info": {
+          "package_name": "com.example.super_secret"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "874539027376-9kdrig0ljgpqemqoul96qh7v20l8pgi6.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBWA-kfUPh4HEa2-qDErJi8dVNXDL4gvLI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "874539027376-9kdrig0ljgpqemqoul96qh7v20l8pgi6.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
