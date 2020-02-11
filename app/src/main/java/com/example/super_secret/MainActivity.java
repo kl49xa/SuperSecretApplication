@@ -1,24 +1,13 @@
 package com.example.super_secret;
 
 import android.Manifest;
-import android.app.Activity;
-import android.app.PendingIntent;
-import android.content.BroadcastReceiver;
-import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.pm.PackageManager;
-import android.database.Cursor;
-import android.net.Uri;
 import android.os.Bundle;
-import android.util.Log;
-import android.widget.Button;
-import android.widget.Switch;
 import android.widget.Toast;
 
 import com.google.android.material.tabs.TabLayout;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
+//import com.google.firebase.database.DatabaseReference;
+//import com.google.firebase.database.FirebaseDatabase;
 
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -26,16 +15,16 @@ import androidx.viewpager.widget.ViewPager;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
-import android.os.Bundle;
-import android.app.Activity;
-import android.telephony.SmsManager;
-import android.view.Menu;
-import android.view.inputmethod.InputMethodManager;
-import android.widget.*;
-import android.view.View.OnClickListener;
-import android.view.*;
-
-import java.util.ArrayList;
+//import android.os.Bundle;
+//import android.app.Activity;
+//import android.telephony.SmsManager;
+//import android.view.Menu;
+//import android.view.inputmethod.InputMethodManager;
+//import android.widget.*;
+//import android.view.View.OnClickListener;
+//import android.view.*;
+//
+//import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -44,14 +33,7 @@ public class MainActivity extends AppCompatActivity {
     private TabLayout tabLayout;
     private Toolbar toolbar;
     private static final int MY_PERMISSIONS_REQUEST_RECEIVE_SMS = 0;
-    private String messages;
 
-
-    // Write a message to the database
-    FirebaseDatabase database = FirebaseDatabase.getInstance();
-    DatabaseReference myRef = database.getReference("message");
-
-    //myRef.setValue("Hello, World!");
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -80,8 +62,6 @@ public class MainActivity extends AppCompatActivity {
                 ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.RECEIVE_SMS}, MY_PERMISSIONS_REQUEST_RECEIVE_SMS);
             }
         }
-
-
     }// OnCreate
     //after getting the result of permission request
 
