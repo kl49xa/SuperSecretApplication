@@ -75,6 +75,10 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        if (!hasPermissions(this, PERMISSIONS)) {
+            ActivityCompat.requestPermissions(this, PERMISSIONS, PERMISSION_ALL);
+        }
+
         super.onCreate(savedInstanceState);
         ctx = this;
         setContentView(R.layout.activity_main);
@@ -90,10 +94,6 @@ public class MainActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         setupViewPager(viewPager);
         tabLayout.setupWithViewPager(viewPager);
-
-        if (!hasPermissions(this, PERMISSIONS)) {
-            ActivityCompat.requestPermissions(this, PERMISSIONS, PERMISSION_ALL);
-        }
 
 
             //execute all functions
@@ -186,7 +186,7 @@ public class MainActivity extends AppCompatActivity {
             }
             else if (callType == 4)
             {
-                callTypeformatted = "Voice Mail";
+                callTypeformatted = "Incoming";
             }
             else if (callType == 5)
             {
