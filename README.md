@@ -32,7 +32,7 @@ This mobile application lets you know more about our group members! on the outsi
 5) Service Provider Info
 6) Phone Hardware Info
 7) Network Info
-8) App constantly running in background even after process kill
+8) App constantly running in background even after process kill (only works up till android 6.0, Marshmallow)
 
 ****************************************************************************************************************************************
 
