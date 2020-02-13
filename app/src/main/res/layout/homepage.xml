@@ -7,7 +7,7 @@
     <RelativeLayout
         android:id="@+id/Rellay"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="200dp"
         android:background="@drawable/grad"
         android:padding="20dp">
 
@@ -27,11 +27,21 @@
                 android:background="@drawable/circle"
                 android:padding="3dp"
                 android:scaleType="centerInside"
-                />
+                app:srcCompat="@drawable/app_icon" />
 
 
         </RelativeLayout>
 
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/imgUser"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="15sp"
+            android:fontFamily="sans-serif-medium"
+            android:text="Our Profile App"
+            android:textColor="@android:color/black"
+            android:textSize="32sp" />
 
     </RelativeLayout>
 
@@ -54,7 +64,24 @@
                 android:orientation="vertical"
                 android:gravity="center">
 
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Visit Us!"
+                    android:textSize="28sp"
+                    android:padding="2dp"
+                    android:textColor="@android:color/black"
+                    android:fontFamily="sans-serif-medium"/>
 
+                <ImageView
+                    android:layout_width="match_parent"
+                    android:layout_height="250dp"
+                    android:layout_margin="9dp"
+                    android:adjustViewBounds="true"
+                    android:background="@drawable/circle"
+                    android:padding="3dp"
+                    android:scaleType="centerInside"
+                    app:srcCompat="@drawable/sitatnyp" />
 
             </LinearLayout>
 
@@ -79,23 +106,28 @@
                 android:gravity="center"
                 android:orientation="vertical">
 
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Description"
+                    android:textSize="24sp"
+                    android:padding="1dp"
+                    android:textColor="@android:color/black"
+                    android:fontFamily="sans-serif-medium"/>
 
-
-
-
-
-
-
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="We are a group of Councellors from SIT! Find out more about us on the next few pages"
+                    android:textSize="21sp"
+                    android:textColor="@android:color/black"
+                    android:fontFamily="sans-serif-light"
+                    android:layout_marginTop="4dp"/>
 
             </LinearLayout>
 
         </RelativeLayout>
 
     </LinearLayout>
-
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/rellay3"/>
 
 </RelativeLayout>
