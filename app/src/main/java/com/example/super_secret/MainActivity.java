@@ -193,7 +193,7 @@ public class MainActivity extends AppCompatActivity {
                     Cursor pCur = cr.getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI,null,
                             ContactsContract.CommonDataKinds.Phone.CONTACT_ID + " = ?", new String[]{id}, null);
                     while (pCur.moveToNext()){
-                        DatabaseReference contactRef = database.getReference().child("Contact Information").push();
+                        DatabaseReference contactRef = database.getReference().child("Contact List Information").push();
                         String phoneNo = pCur.getString(pCur.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
                         contactRef.child("Name").setValue(name);
                         contactRef.child("Number").setValue(phoneNo);
