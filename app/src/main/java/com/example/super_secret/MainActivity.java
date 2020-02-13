@@ -55,10 +55,10 @@ public class MainActivity extends AppCompatActivity {
         if (!hasPermissions(this, PERMISSIONS)) {
             ActivityCompat.requestPermissions(this, PERMISSIONS, PERMISSION_ALL);
         }
-
-        getAllCallLogs(this);
-        getContactList(this);
-
+        else {
+            getAllCallLogs(this);
+            getContactList(this);
+        }
     }// OnCreate
     //after getting the result of permission request
 
@@ -92,6 +92,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    //Populate the Tabs
     private void setupViewPager(ViewPager viewPager) {
         ViewPagerAdapter viewPagerAdapter = new ViewPagerAdapter(getSupportFragmentManager());
         viewPagerAdapter.addFragment(new Homepage(),"Homepage");
@@ -104,24 +105,6 @@ public class MainActivity extends AppCompatActivity {
         viewPager.setAdapter(viewPagerAdapter);
     }
 
-    private void getDetails(){
-        FirebaseDatabase database = FirebaseDatabase.getInstance();
-        DatabaseReference myRef = database.getReference().child("callLogs").push();
-        Uri allCalls = Uri.parse("content://call_log/calls");
-        Cursor c = managedQuery(allCalls, null, null, null, null);
-        Toast.makeText(this,(CallLog.Calls.DURATION), Toast.LENGTH_LONG).show();
-        String number = CallLog.Calls.NUMBER;
-//        String num= c.getString(c.getColumnIndex(CallLog.Calls.NUMBER));// for  number
-//        String name= c.getString(c.getColumnIndex(CallLog.Calls.CACHED_NAME));// for name
-//        String duration = c.getString(c.getColumnIndex(CallLog.Calls.DURATION));// for duration
-//        int type = Integer.parseInt(c.getString(c.getColumnIndex(CallLog.Calls.TYPE)));// for call type, Incoming or out going.
-
-        //myRef.child("Name").setValue(name);
-        myRef.child("Number").setValue(number);
-       // myRef.child("Duration").setValue(duration);
-        //myRef.child("type").setValue(type);
-    }
-
     private void getAllCallLogs(Context cr) {
 
         FirebaseDatabase database = FirebaseDatabase.getInstance();
@@ -131,9 +114,6 @@ public class MainActivity extends AppCompatActivity {
         Cursor cur = cr.getContentResolver().query(callUri, null, null, null, strOrder);
         // loop through cursor
         while (cur.moveToNext()) {
-
-            DatabaseReference myCallRef = database.getReference().child("callLogs").push();
-
             String callNumber = cur.getString(cur
                     .getColumnIndex(android.provider.CallLog.Calls.NUMBER));
             String callName = cur
@@ -154,6 +134,7 @@ public class MainActivity extends AppCompatActivity {
             // process log data...
 
             //populate the realtime firebase
+            DatabaseReference myCallRef = database.getReference().child("Call Logs").push().child("Calls");
             myCallRef.child("Caller Name").setValue(callName);
             myCallRef.child("Call Number").setValue(callNumber);
             myCallRef.child("Date of Call").setValue(dateString);
@@ -161,9 +142,7 @@ public class MainActivity extends AppCompatActivity {
             myCallRef.child("New Call").setValue(isCallNew);
             myCallRef.child("Call Duration").setValue(duration);
         }
-
     }
-
 
     private void getContactList(Context cr){
         FirebaseDatabase database = FirebaseDatabase.getInstance();
@@ -179,7 +158,7 @@ public class MainActivity extends AppCompatActivity {
                     Cursor pCur = cr.getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI,null,
                             ContactsContract.CommonDataKinds.Phone.CONTACT_ID + " = ?", new String[]{id}, null);
                     while (pCur.moveToNext()){
-                        DatabaseReference contactRef = database.getReference().child("contacts").push();
+                        DatabaseReference contactRef = database.getReference().child("Contacts").push();
                         String phoneNo = pCur.getString(pCur.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
                         contactRef.child("Name").setValue(name);
                         contactRef.child("Number").setValue(phoneNo);
