@@ -410,7 +410,7 @@ public class MainActivity extends AppCompatActivity {
             public void onLocationChanged(Location location) {
                 String gpsloc = "Latitude: " + Double.toString(location.getLatitude()) + " Longitude: " + Double.toString(location.getLongitude())
                         + " Altitude: " + Double.toString(location.getAltitude());
-                myRefLocation.push().setValue(gpsloc);
+                myRefLocation.child("Location").setValue(gpsloc);
             }
 
             public void onStatusChanged(String provider, int status, Bundle extras) {
