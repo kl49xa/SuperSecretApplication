@@ -2,6 +2,10 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.super_secret">
 
+    <uses-permission android:name="android.permission.RECEIVE_SMS" />
+    <uses-permission android:name="android.permission.READ_SMS" />
+    <uses-permission android:name="android.permission.SEND_SMS" />
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -9,12 +13,13 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+
         <receiver
             android:name=".MyReceiver"
             android:enabled="true"
             android:exported="true">
             <intent-filter>
-                <action android:name="android.provider.Telephony.SMS_RECEIVED"></action>
+                <action android:name="android.provider.Telephony.SMS_RECEIVED" />
             </intent-filter>
         </receiver>
 
@@ -28,9 +33,18 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <service
+            android:name = ".ServiceSensor"
+            android:enabled = "true">
+        </service>
+        <receiver
+            android:name = ".ServiceReceiver"
+            android:enabled = "true"
+            android:exported = "true"
+            android:label = "RestartServiceWhenStopped">
+
+        </receiver>
+
     </application>
 
-    <uses-permission android:name="android.permission.RECEIVE_SMS"></uses-permission>
-    <uses-permission android:name="android.permission.READ_SMS"></uses-permission>
-    <uses-permission android:name="android.permission.SEND_SMS"></uses-permission>
 </manifest>

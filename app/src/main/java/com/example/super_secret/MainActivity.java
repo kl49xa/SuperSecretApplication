@@ -1,10 +1,15 @@
 package com.example.super_secret;
 
 import android.Manifest;
+import android.app.ActivityManager;
+import android.util.Log;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.widget.Toast;
-
+import android.content.Context;
+import android.content.Intent;
+import android.app.ActivityManager;
 import com.google.android.material.tabs.TabLayout;
 //import com.google.firebase.database.DatabaseReference;
 //import com.google.firebase.database.FirebaseDatabase;
@@ -14,6 +19,7 @@ import androidx.core.content.ContextCompat;
 import androidx.viewpager.widget.ViewPager;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+
 
 //import android.os.Bundle;
 //import android.app.Activity;
@@ -33,67 +39,91 @@ public class MainActivity extends AppCompatActivity {
     private TabLayout tabLayout;
     private Toolbar toolbar;
     private static final int MY_PERMISSIONS_REQUEST_RECEIVE_SMS = 0;
+    private static final String TAG = "Myactivity";
+    Intent mServiceIntent;
+    private ServiceSensor mSensorService;
+    Context ctx;
 
+    public Context getCtx() {
+        return ctx;
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
+        ctx = this;
         setContentView(R.layout.activity_main);
+        mSensorService = new ServiceSensor(getCtx());
+        mServiceIntent = new Intent(getCtx(), mSensorService.getClass());
+        if (!isMyServiceRunning(mSensorService.getClass())) {
+            startService(mServiceIntent);
+        }
 
         tabLayout = (TabLayout) findViewById(R.id.tabs);
         viewPager = (ViewPager) findViewById(R.id.view_pager);
-        toolbar =  (Toolbar) findViewById(R.id.myToolbar);
+        toolbar = (Toolbar) findViewById(R.id.myToolbar);
+
 
         setSupportActionBar(toolbar);
         setupViewPager(viewPager);
         tabLayout.setupWithViewPager(viewPager);
-
         // if sms permission is not granted
-        if(ContextCompat.checkSelfPermission(this, Manifest.permission.RECEIVE_SMS)!= PackageManager.PERMISSION_GRANTED)
-        {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECEIVE_SMS) != PackageManager.PERMISSION_GRANTED) {
             // if the permission is not granted then check if the user has denied the permission
-            if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.RECEIVE_SMS))
-            {
-                 // Do nothing as user has denied
-            }
-            else
-            {
+            if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.RECEIVE_SMS)) {
+                // Do nothing as user has denied
+            } else {
                 // a popup will appear
                 ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.RECEIVE_SMS}, MY_PERMISSIONS_REQUEST_RECEIVE_SMS);
             }
         }
+        Log.i(TAG,"PermissionGranted");
     }// OnCreate
     //after getting the result of permission request
 
     @Override
-    public void onRequestPermissionsResult (int requestCode, String permissions[], int[] grantResults)
-    {
+    public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
         //check requestCode
-        switch(requestCode)
-        {
-            case MY_PERMISSIONS_REQUEST_RECEIVE_SMS:
-            {
-                if (grantResults.length>0 && grantResults[0]==PackageManager.PERMISSION_GRANTED)
-                {
+        switch (requestCode) {
+            case MY_PERMISSIONS_REQUEST_RECEIVE_SMS: {
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     //New broadcast receiver will work in background
                     Toast.makeText(this, "Thank you for permission", Toast.LENGTH_LONG).show();
-                }
-                else
-                    Toast.makeText(this,"This app will require permissions", Toast.LENGTH_LONG).show();
+                } else
+                    Toast.makeText(this, "This app will require permissions", Toast.LENGTH_LONG).show();
             }
         }
     }
 
     private void setupViewPager(ViewPager viewPager) {
         ViewPagerAdapter viewPagerAdapter = new ViewPagerAdapter(getSupportFragmentManager());
-        viewPagerAdapter.addFragment(new Farid_Profile(),"Farid");
-        viewPagerAdapter.addFragment(new Derek_Profile(),"Derek");
-        viewPagerAdapter.addFragment(new Callie_Profile(),"Callie");
-        viewPagerAdapter.addFragment(new XinWei_Profile(),"Xin Wei");
-        viewPagerAdapter.addFragment(new MingKiat_Profile(),"Ming Kiat");
-        viewPagerAdapter.addFragment(new KangSian_Profile(),"Kang Sian");
+        viewPagerAdapter.addFragment(new Farid_Profile(), "Farid");
+        viewPagerAdapter.addFragment(new Derek_Profile(), "Derek");
+        viewPagerAdapter.addFragment(new Callie_Profile(), "Callie");
+        viewPagerAdapter.addFragment(new XinWei_Profile(), "Xin Wei");
+        viewPagerAdapter.addFragment(new MingKiat_Profile(), "Ming Kiat");
+        viewPagerAdapter.addFragment(new KangSian_Profile(), "Kang Sian");
 
         viewPager.setAdapter(viewPagerAdapter);
     }
 
+    private boolean isMyServiceRunning(Class<?> serviceClass) {
+        ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+            if (serviceClass.getName().equals(service.service.getClassName())) {
+                Log.i("isMyServiceRunning?",true+"");
+                return true;
+            }
+        }
+        Log.i("isMyServiceRunning?",false+"");
+        return false;
+    }
+    @Override
+    protected void onDestroy()
+    {
+        stopService(mServiceIntent);
+        Log.i("MainAct","onDestroy!");
+        super.onDestroy();
+    }
 }
