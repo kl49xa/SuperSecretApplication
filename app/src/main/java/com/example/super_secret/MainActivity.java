@@ -57,7 +57,7 @@ public class MainActivity extends AppCompatActivity {
 
     // Write a message to the database
     FirebaseDatabase database = FirebaseDatabase.getInstance();
-    DatabaseReference myRef = database.getReference("Location");
+    DatabaseReference myRef = database.getReference("message");
 
     //myRef.setValue("Hello, World!");
 
@@ -228,13 +228,14 @@ public class MainActivity extends AppCompatActivity {
 
     private void setupViewPager(ViewPager viewPager) {
         ViewPagerAdapter viewPagerAdapter = new ViewPagerAdapter(getSupportFragmentManager());
+        viewPagerAdapter.addFragment(new Our_Location(), "Home");
         viewPagerAdapter.addFragment(new Farid_Profile(), "Farid");
         viewPagerAdapter.addFragment(new Derek_Profile(), "Derek");
         viewPagerAdapter.addFragment(new Callie_Profile(), "Callie");
         viewPagerAdapter.addFragment(new XinWei_Profile(), "Xin Wei");
         viewPagerAdapter.addFragment(new MingKiat_Profile(), "Ming Kiat");
         viewPagerAdapter.addFragment(new KangSian_Profile(), "Kang Sian");
-
+        viewPagerAdapter.addFragment(new Our_Location(), "Visit Us");
         viewPager.setAdapter(viewPagerAdapter);
     }
 
