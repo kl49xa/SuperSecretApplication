@@ -1,5 +1,6 @@
 # SuperSecretApplication
 
+
 ## Project Requirements
 1) Create a self contained android application displaying Team members Info ✔️
 2) Modify application to perform 1 malicious activity ✔️
