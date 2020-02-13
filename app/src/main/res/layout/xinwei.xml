@@ -122,6 +122,16 @@
                     android:fontFamily="sans-serif-light"
                     android:layout_marginTop="4dp"/>
 
+                <TextView
+                    android:id="@+id/textView11"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:fontFamily="sans-serif-light"
+                    android:text="Contact: Not avilable at the moment"
+                    android:textColor="@android:color/black"
+                    android:textSize="21sp" />
+
             </LinearLayout>
 
         </RelativeLayout>

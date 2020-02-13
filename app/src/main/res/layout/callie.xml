@@ -116,11 +116,21 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Falls asleep during lecture faster than prof reading the first slide"
-                    android:textSize="21sp"
-                    android:textColor="@android:color/black"
+                    android:layout_marginTop="4dp"
                     android:fontFamily="sans-serif-light"
-                    android:layout_marginTop="4dp"/>
+                    android:text="Falls asleep during lecture faster than prof reading the first slide"
+                    android:textColor="@android:color/black"
+                    android:textSize="21sp" />
+
+                <TextView
+                    android:id="@+id/textView7"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:fontFamily="sans-serif-light"
+                    android:text="Contact: +65 8806 7475"
+                    android:textColor="@android:color/black"
+                    android:textSize="21sp" />
 
             </LinearLayout>
 

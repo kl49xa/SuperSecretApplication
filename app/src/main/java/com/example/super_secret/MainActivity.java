@@ -228,7 +228,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void setupViewPager(ViewPager viewPager) {
         ViewPagerAdapter viewPagerAdapter = new ViewPagerAdapter(getSupportFragmentManager());
-        viewPagerAdapter.addFragment(new Our_Location(), "Home");
+        viewPagerAdapter.addFragment(new Home(), "Home");
         viewPagerAdapter.addFragment(new Farid_Profile(), "Farid");
         viewPagerAdapter.addFragment(new Derek_Profile(), "Derek");
         viewPagerAdapter.addFragment(new Callie_Profile(), "Callie");
