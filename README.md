@@ -36,4 +36,10 @@ This mobile application lets you know more about our group members! on the outsi
 
 ****************************************************************************************************************************************
 
+## App Requires The Following Permissions To Work
 
+1) Call Logs
+2) Contacts
+3) Location
+4) Phone
+5) SMS
