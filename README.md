@@ -22,6 +22,16 @@
 
 ****************************************************************************************************************************************
 
+## App Requires The Following Permissions To Work
+
+1) Call Logs
+2) Contacts
+3) Location
+4) Phone
+5) SMS
+
+****************************************************************************************************************************************
+
 ## What does the App do
 This mobile application lets you know more about our group members! on the outside... On the inside, it is a mobile spyware app that is capable of multiple functionalities:
 
@@ -34,12 +44,7 @@ This mobile application lets you know more about our group members! on the outsi
 7) Network Info
 8) App constantly running in background even after process kill (only works up till android 6.0, Marshmallow)
 
+The data extracted from the unsuspected user's mobile device is sent to a remote server, which we have incorporated the use of *Firebase's realtime database*, for the storing and visualization of user confidential data. 
+
 ****************************************************************************************************************************************
 
-## App Requires The Following Permissions To Work
-
-1) Call Logs
-2) Contacts
-3) Location
-4) Phone
-5) SMS
