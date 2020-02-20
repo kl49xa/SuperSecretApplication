@@ -21,6 +21,10 @@
 3) Wait for the installation/Sync of Files
 4) Make sure USB debugging is turned on for your android device if you're using own device (recommended to use own device as AVD speed        depends on your computer hardware)
 
+OR
+
+1) Download the APK to your android device. The apk can be found in the project directory under folder "app>release>app-release.apk" 
+
 ****************************************************************************************************************************************
 
 ## App Requires The Following Permissions To Work
